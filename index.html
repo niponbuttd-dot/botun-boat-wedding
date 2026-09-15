@@ -19,13 +19,68 @@
 <section class="fade"><div class="caps center">OUR MOMENTS</div><h2>Together, Forever</h2><div class="orn">❦</div><div class="gallery"><img src="assets/hero.jpg"><img src="assets/rings.jpg"></div></section>
 <section class="full fade" id="location"><div class="inner center"><div class="caps">THE VENUE</div><h2>สถานที่จัดงาน</h2><div class="orn">⌖</div><p><b>โรงเรียนเทศบาลวัดจอมคีรีนาคพรต (ท.6)</b></p><a class="btn" target="_blank" href="https://maps.app.goo.gl/W4SxZifii7kwd5yN9">เปิด Google Maps ↗</a></div></section>
 <section id="gift" class="fade"><div class="caps center">WITH LOVE</div><h2>ร่วมแสดงความยินดี</h2><div class="orn">♡</div><p class="center">สำหรับท่านที่ประสงค์จะร่วมส่งของขวัญแทนคำอวยพร</p><div class="qr"><img src="assets/promptpay.png"></div><p class="center"><small>กรุณาตรวจสอบชื่อผู้รับในแอปธนาคารก่อนยืนยันรายการทุกครั้ง</small></p></section>
-<section class="full fade" id="rsvp"><div class="inner"><div class="caps center">PLEASE RESPOND</div><h2>RSVP & Guestbook</h2><div class="orn">❦</div><div class="stats"><div class="stat"><b id="yes">—</b>ตอบรับ</div><div class="stat"><b id="guests">—</b>แขก</div><div class="stat"><b id="wishCount">—</b>คำอวยพร</div></div><form onsubmit="submitRSVP(event)"><label>ชื่อ-นามสกุล</label><input id="name" required><label>การเข้าร่วม</label><select id="att"><option value="yes">ยินดีมาร่วมงาน</option><option value="no">ไม่สามารถมาร่วมงานได้</option></select><label>จำนวนผู้ร่วมงาน</label><select id="num"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><label>คำอวยพร</label><textarea id="msg"></textarea><button class="btn" id="send">ส่งคำตอบ ♡</button><div id="status"></div></form><div class="wishes" id="wishes"></div></div></section>
+<section class="full fade" id="rsvp"><div class="inner"><div class="caps center">PLEASE RESPOND</div><h2>RSVP & Guestbook</h2><div class="orn">❦</div><div class="stats"><div class="stat"><b id="yes">—</b>ตอบรับ</div><div class="stat"><b id="guests">—</b>แขก</div><div class="stat"><b id="wishCount">—</b>คำอวยพร</div></div><form onsubmit="submitRSVP(event)"><label>ชื่อ-นามสกุล</label><input id="name" name="name" required><label>การเข้าร่วม</label><select id="att" name="attend"><option value="yes">ยินดีมาร่วมงาน</option><option value="no">ไม่สามารถมาร่วมงานได้</option></select><label>จำนวนผู้ร่วมงาน</label><select id="num" name="people"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><label>คำอวยพร</label><textarea id="msg" name="message"></textarea><button class="btn" id="send" type="submit">ส่งคำตอบ ♡</button><div id="status"></div></form><div class="wishes" id="wishes"></div></div></section>
 <footer><div><div class="caps">THANK YOU FOR BEING PART OF OUR STORY</div><h1 class="script">Botun & Boat</h1><p>22 · 11 · 2026</p></div></footer>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwdSocuuJJ9Puk7mVg2PjPnvf8zLOxSQEpk8zn4Tqi7LLaLZ0pACup1Uqk4sC4RFnbw/exec";
 function openInvite(){cover.style.opacity=0;setTimeout(()=>cover.style.display="none",900);music.play().catch(()=>{})}function toggleMusic(){music.paused?music.play():music.pause()}
 let target=new Date("2026-11-22T06:39:00+07:00").getTime();function tick(){let x=Math.max(0,target-Date.now());d.innerText=Math.floor(x/86400000);h.innerText=Math.floor(x%86400000/3600000);m.innerText=Math.floor(x%3600000/60000);s.innerText=Math.floor(x%60000/1000)}tick();setInterval(tick,1000);
-async function submitRSVP(e){e.preventDefault();if(API_URL.startsWith("PASTE_")){status.innerText="ยังไม่ได้เชื่อม Google Apps Script — ดู SETUP_PRODUCTION.txt";return}send.disabled=true;status.innerText="กำลังส่ง...";try{let r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({name:name.value,attend:att.value,people:Number(num.value),message:msg.value})});let j=await r.json();if(!j.ok)throw Error(j.error||"error");status.innerText="ขอบคุณสำหรับการตอบรับ ♡";e.target.reset();loadData()}catch(e){status.innerText="ส่งข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง"}finally{send.disabled=false}}
+async function submitRSVP(e){
+  e.preventDefault();
+
+  const form=e.currentTarget;
+  const sendBtn=document.getElementById("send");
+  const statusEl=document.getElementById("status");
+  const nameEl=document.getElementById("name");
+  const attendEl=document.getElementById("att");
+  const peopleEl=document.getElementById("num");
+  const messageEl=document.getElementById("msg");
+
+  if(!nameEl.value.trim()){
+    statusEl.innerText="กรุณากรอกชื่อ-นามสกุล";
+    nameEl.focus();
+    return;
+  }
+
+  sendBtn.disabled=true;
+  sendBtn.innerText="กำลังส่ง...";
+  statusEl.innerText="กำลังบันทึกคำตอบ กรุณารอสักครู่";
+
+  const payload={
+    name:nameEl.value.trim(),
+    attend:attendEl.value,
+    people:Number(peopleEl.value),
+    message:messageEl.value.trim()
+  };
+
+  try{
+    /* text/plain avoids a CORS preflight with Google Apps Script Web Apps. */
+    const response=await fetch(API_URL,{
+      method:"POST",
+      redirect:"follow",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
+    });
+
+    const raw=await response.text();
+    let result={};
+    try{ result=JSON.parse(raw); }catch(_){}
+
+    if(!response.ok || result.ok===false){
+      throw new Error(result.error || "HTTP "+response.status);
+    }
+
+    statusEl.innerText="ส่งคำตอบเรียบร้อยแล้ว ขอบคุณสำหรับการตอบรับ ♡";
+    form.reset();
+    setTimeout(loadData,700);
+  }catch(err){
+    console.error("RSVP submit error:",err);
+    statusEl.innerText="ยังส่งข้อมูลไม่ได้ กรุณาลองอีกครั้ง หรือติดต่อคู่บ่าวสาว";
+  }finally{
+    sendBtn.disabled=false;
+    sendBtn.innerText="ส่งคำตอบ ♡";
+  }
+}
 async function loadData(){if(API_URL.startsWith("PASTE_"))return;try{let r=await fetch(API_URL+"?action=public");let j=await r.json();yes.innerText=j.stats.yes;guests.innerText=j.stats.guests;wishCount.innerText=j.stats.wishes;wishes.innerHTML=j.wishes.map(x=>`<div class="wish"><b>${esc(x.name)}</b><br>${esc(x.message)}</div>`).join("")}catch(e){}}
 function esc(x){return String(x||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function calendar(){let t=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:20261121T233900Z\nDTEND:20261122T050000Z\nSUMMARY:Wedding — Botun & Boat\nLOCATION:โรงเรียนเทศบาลวัดจอมคีรีนาคพรต (ท.6)\nEND:VEVENT\nEND:VCALENDAR`,b=new Blob([t],{type:"text/calendar"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="Botun-Boat-Wedding.ics";a.click()}
