@@ -19,12 +19,66 @@
 <section class="fade"><div class="caps center">OUR MOMENTS</div><h2>Together, Forever</h2><div class="orn">❦</div><div class="gallery"><img src="assets/hero.jpg"><img src="assets/rings.jpg"></div></section>
 <section class="full fade" id="location"><div class="inner center"><div class="caps">THE VENUE</div><h2>สถานที่จัดงาน</h2><div class="orn">⌖</div><p><b>โรงเรียนเทศบาลวัดจอมคีรีนาคพรต (ท.6)</b></p><a class="btn" target="_blank" href="https://maps.app.goo.gl/W4SxZifii7kwd5yN9">เปิด Google Maps ↗</a></div></section>
 <section id="gift" class="fade"><div class="caps center">WITH LOVE</div><h2>ร่วมแสดงความยินดี</h2><div class="orn">♡</div><p class="center">สำหรับท่านที่ประสงค์จะร่วมส่งของขวัญแทนคำอวยพร</p><div class="qr"><img src="assets/promptpay.png"></div><p class="center"><small>กรุณาตรวจสอบชื่อผู้รับในแอปธนาคารก่อนยืนยันรายการทุกครั้ง</small></p></section>
-<section class="full fade" id="rsvp"><div class="inner"><div class="caps center">PLEASE RESPOND</div><h2>RSVP & Guestbook</h2><div class="orn">❦</div><div class="stats"><div class="stat"><b id="yes">—</b>ตอบรับ</div><div class="stat"><b id="guests">—</b>แขก</div><div class="stat"><b id="wishCount">—</b>คำอวยพร</div></div><form onsubmit="submitRSVP(event)"><label>ชื่อ-นามสกุล</label><input id="name" name="name" required><label>การเข้าร่วม</label><select id="att" name="attend"><option value="yes">ยินดีมาร่วมงาน</option><option value="no">ไม่สามารถมาร่วมงานได้</option></select><label>จำนวนผู้ร่วมงาน</label><select id="num" name="people"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><label>คำอวยพร</label><textarea id="msg" name="message"></textarea><button class="btn" id="send" type="submit">ส่งคำตอบ ♡</button><div id="status"></div></form><div class="wishes" id="wishes"></div></div></section>
+<section class="full fade" id="rsvp"><div class="inner"><div class="caps center">PLEASE RESPOND</div><h2>RSVP & Guestbook</h2><div class="orn">❦</div><div class="stats"><div class="stat"><b id="yes">—</b>ตอบรับ</div><div class="stat"><b id="guests">—</b>แขก</div><div class="stat"><b id="wishCount">—</b>คำอวยพร</div></div><form onsubmit="submitRSVP(event)"><label>ชื่อ-นามสกุล</label><input id="name" name="name" required><label>การเข้าร่วม</label><select id="att" name="attend"><option value="yes">ยินดีมาร่วมงาน</option><option value="no">ไม่สามารถมาร่วมงานได้</option></select><label>จำนวนผู้ร่วมงาน</label><select id="num" name="people"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select><label>คำอวยพร</label><textarea id="msg" name="message"></textarea>
+<label>แนบสลิปโอนเงิน <small>(ถ้ามี)</small></label>
+<input id="slip" name="slip" type="file" accept="image/*">
+<div id="slipPreview" style="display:none;margin:10px 0 16px">
+  <img id="slipImg" alt="ตัวอย่างสลิป" style="max-width:220px;max-height:300px;border-radius:12px;object-fit:contain;border:1px solid #dbc7b4">
+  <div><small>ระบบจะย่อรูปก่อนส่งเพื่อให้ส่งได้เร็วขึ้น</small></div>
+</div><button class="btn" id="send" type="submit">ส่งคำตอบ ♡</button><div id="status"></div></form><div class="wishes" id="wishes"></div></div></section>
 <footer><div><div class="caps">THANK YOU FOR BEING PART OF OUR STORY</div><h1 class="script">Botun & Boat</h1><p>22 · 11 · 2026</p></div></footer>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwdSocuuJJ9Puk7mVg2PjPnvf8zLOxSQEpk8zn4Tqi7LLaLZ0pACup1Uqk4sC4RFnbw/exec";
 function openInvite(){cover.style.opacity=0;setTimeout(()=>cover.style.display="none",900);music.play().catch(()=>{})}function toggleMusic(){music.paused?music.play():music.pause()}
 let target=new Date("2026-11-22T06:39:00+07:00").getTime();function tick(){let x=Math.max(0,target-Date.now());d.innerText=Math.floor(x/86400000);h.innerText=Math.floor(x%86400000/3600000);m.innerText=Math.floor(x%3600000/60000);s.innerText=Math.floor(x%60000/1000)}tick();setInterval(tick,1000);
+
+const slipInput=document.getElementById("slip");
+if(slipInput){
+  slipInput.addEventListener("change",()=>{
+    const f=slipInput.files && slipInput.files[0];
+    const box=document.getElementById("slipPreview");
+    const img=document.getElementById("slipImg");
+    if(!f){ box.style.display="none"; return; }
+    if(!f.type.startsWith("image/")){
+      alert("กรุณาเลือกไฟล์รูปภาพสลิป");
+      slipInput.value="";
+      box.style.display="none";
+      return;
+    }
+    img.src=URL.createObjectURL(f);
+    box.style.display="block";
+  });
+}
+
+function compressSlip(file){
+  return new Promise((resolve,reject)=>{
+    if(!file){ resolve(null); return; }
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error("อ่านไฟล์สลิปไม่สำเร็จ"));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error("เปิดรูปสลิปไม่สำเร็จ"));
+      img.onload=()=>{
+        const maxSide=1400;
+        let w=img.width, h=img.height;
+        const scale=Math.min(1,maxSide/Math.max(w,h));
+        w=Math.round(w*scale); h=Math.round(h*scale);
+        const c=document.createElement("canvas");
+        c.width=w; c.height=h;
+        c.getContext("2d").drawImage(img,0,0,w,h);
+        const dataUrl=c.toDataURL("image/jpeg",0.82);
+        resolve({
+          data:dataUrl.split(",")[1],
+          mime:"image/jpeg",
+          name:"slip_"+Date.now()+".jpg"
+        });
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 async function submitRSVP(e){
   e.preventDefault();
 
@@ -35,6 +89,7 @@ async function submitRSVP(e){
   const attendEl=document.getElementById("att");
   const peopleEl=document.getElementById("num");
   const messageEl=document.getElementById("msg");
+  const slipEl=document.getElementById("slip");
 
   if(!nameEl.value.trim()){
     statusEl.innerText="กรุณากรอกชื่อ-นามสกุล";
@@ -46,11 +101,22 @@ async function submitRSVP(e){
   sendBtn.innerText="กำลังส่ง...";
   statusEl.innerText="กำลังบันทึกคำตอบ กรุณารอสักครู่";
 
+  let slipData=null;
+  try{
+    slipData=await compressSlip(slipEl && slipEl.files ? slipEl.files[0] : null);
+  }catch(err){
+    sendBtn.disabled=false;
+    sendBtn.innerText="ส่งคำตอบ ♡";
+    statusEl.innerText=err.message;
+    return;
+  }
+
   const payload={
     name:nameEl.value.trim(),
     attend:attendEl.value,
     people:Number(peopleEl.value),
-    message:messageEl.value.trim()
+    message:messageEl.value.trim(),
+    slip:slipData
   };
 
   try{
@@ -72,6 +138,7 @@ async function submitRSVP(e){
 
     statusEl.innerText="ส่งคำตอบเรียบร้อยแล้ว ขอบคุณสำหรับการตอบรับ ♡";
     form.reset();
+    const preview=document.getElementById("slipPreview"); if(preview) preview.style.display="none";
     setTimeout(loadData,700);
   }catch(err){
     console.error("RSVP submit error:",err);
