@@ -1,4 +1,5 @@
 <!doctype html><html lang="th"><head>
+<!-- Botun & Boat RSVP build 2026-09-15-slip-popup-v3 -->
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#eadfd1"><meta property="og:title" content="Botun & Boat — Wedding Invitation"><meta property="og:description" content="Sunday 22 November 2026">
 <title>Botun & Boat — Wedding Invitation</title>
@@ -118,9 +119,21 @@ async function submitRSVP(e){
   }catch(err){
     sendBtn.disabled=false;
     sendBtn.innerText="ส่งคำตอบ ♡";
-    statusEl.innerText=err.message;
+    statusEl.innerText="รูปสลิปมีปัญหา กรุณาเลือกรูปใหม่";
     return;
   }
+
+  const payload={
+    name:nameEl.value.trim(),
+    attend:attendEl.value,
+    people:String(Number(peopleEl.value)),
+    message:messageEl.value.trim(),
+    slipData:slipData ? slipData.data : "",
+    slipMime:slipData ? slipData.mime : "",
+    slipName:slipData ? slipData.name : ""
+  };
+
+  let submitted=false;
 
   try{
     let frame=document.getElementById("rsvpTarget");
@@ -136,46 +149,47 @@ async function submitRSVP(e){
     postForm.method="POST";
     postForm.action=API_URL;
     postForm.target="rsvpTarget";
+    postForm.enctype="application/x-www-form-urlencoded";
     postForm.style.display="none";
 
-    const fields={
-      name:nameEl.value.trim(),
-      attend:attendEl.value,
-      people:String(Number(peopleEl.value)),
-      message:messageEl.value.trim(),
-      slipData:slipData ? slipData.data : "",
-      slipMime:slipData ? slipData.mime : "",
-      slipName:slipData ? slipData.name : ""
-    };
-
-    Object.entries(fields).forEach(([k,v])=>{
-      const input=document.createElement("input");
-      input.type="hidden";
+    Object.entries(payload).forEach(([k,v])=>{
+      const input=document.createElement("textarea");
       input.name=k;
       input.value=v;
       postForm.appendChild(input);
     });
 
     document.body.appendChild(postForm);
-    postForm.submit();
+    HTMLFormElement.prototype.submit.call(postForm);
+    submitted=true;
+    setTimeout(()=>postForm.remove(),2500);
+  }catch(err){
+    console.warn("Form POST fallback:",err);
+    try{
+      const body=new URLSearchParams(payload);
+      fetch(API_URL,{
+        method:"POST",
+        mode:"no-cors",
+        body:body,
+        keepalive:false
+      }).catch(()=>{});
+      submitted=true;
+    }catch(_){}
+  }
 
+  if(submitted){
     statusEl.innerText="ส่งคำตอบแล้ว ขอบคุณสำหรับการตอบรับ ♡";
     showThankYou();
     form.reset();
     const preview=document.getElementById("slipPreview");
     if(preview) preview.style.display="none";
-
-    setTimeout(()=>{
-      postForm.remove();
-      loadData();
-    },1800);
-  }catch(err){
-    console.error("RSVP submit error:",err);
-    statusEl.innerText="ยังส่งข้อมูลไม่ได้ กรุณาลองอีกครั้ง";
-  }finally{
-    sendBtn.disabled=false;
-    sendBtn.innerText="ส่งคำตอบ ♡";
+    setTimeout(loadData,2200);
+  }else{
+    statusEl.innerText="ไม่สามารถเริ่มส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง";
   }
+
+  sendBtn.disabled=false;
+  sendBtn.innerText="ส่งคำตอบ ♡";
 }
 async function loadData(){if(API_URL.startsWith("PASTE_"))return;try{let r=await fetch(API_URL+"?action=public");let j=await r.json();yes.innerText=j.stats.yes;guests.innerText=j.stats.guests;wishCount.innerText=j.stats.wishes;wishes.innerHTML=j.wishes.map(x=>`<div class="wish"><b>${esc(x.name)}</b><br>${esc(x.message)}</div>`).join("")}catch(e){}}
 function esc(x){return String(x||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
