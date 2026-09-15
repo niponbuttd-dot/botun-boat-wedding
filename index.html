@@ -71,14 +71,14 @@ function compressSlip(file){
       const img=new Image();
       img.onerror=()=>reject(new Error("เปิดรูปสลิปไม่สำเร็จ"));
       img.onload=()=>{
-        const maxSide=1400;
+        const maxSide=800;
         let w=img.width, h=img.height;
         const scale=Math.min(1,maxSide/Math.max(w,h));
         w=Math.round(w*scale); h=Math.round(h*scale);
         const c=document.createElement("canvas");
         c.width=w; c.height=h;
         c.getContext("2d").drawImage(img,0,0,w,h);
-        const dataUrl=c.toDataURL("image/jpeg",0.82);
+        const dataUrl=c.toDataURL("image/jpeg",0.58);
         resolve({
           data:dataUrl.split(",")[1],
           mime:"image/jpeg",
