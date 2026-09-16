@@ -37,7 +37,7 @@
 <div id="slipPreview" style="display:none;margin:10px 0 16px">
   <img id="slipImg" alt="ตัวอย่างสลิป" style="max-width:220px;max-height:300px;border-radius:12px;object-fit:contain;border:1px solid #dbc7b4">
   <div><small>ระบบจะย่อรูปก่อนส่งเพื่อให้ส่งได้เร็วขึ้น</small></div>
-</div><button class="btn" id="send" type="submit">ส่งคำตอบ ♡</button><div id="status"></div></form><div class="wishes" id="wishes"></div></div></section>
+</div><button class="btn" id="send" type="submit">ส่งคำตอบ ♡</button><div id="status"></div></form></div></section>
 <footer><div><div class="caps">THANK YOU FOR BEING PART OF OUR STORY</div><h1 class="script">Botun & Boat</h1><p>22 · 11 · 2026</p></div></footer>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwdSocuuJJ9Puk7mVg2PjPnvf8zLOxSQEpk8zn4Tqi7LLaLZ0pACup1Uqk4sC4RFnbw/exec";
@@ -191,7 +191,7 @@ async function submitRSVP(e){
   sendBtn.disabled=false;
   sendBtn.innerText="ส่งคำตอบ ♡";
 }
-async function loadData(){if(API_URL.startsWith("PASTE_"))return;try{let r=await fetch(API_URL+"?action=public");let j=await r.json();yes.innerText=j.stats.yes;guests.innerText=j.stats.guests;wishCount.innerText=j.stats.wishes;wishes.innerHTML=j.wishes.map(x=>`<div class="wish"><b>${esc(x.name)}</b><br>${esc(x.message)}</div>`).join("")}catch(e){}}
+async function loadData(){if(API_URL.startsWith("PASTE_"))return;try{let r=await fetch(API_URL+"?action=public");let j=await r.json();yes.innerText=j.stats.yes;guests.innerText=j.stats.guests;wishCount.innerText=j.stats.wishes;}catch(e){}}
 function esc(x){return String(x||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function calendar(){let t=`BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:20261121T233900Z\nDTEND:20261122T050000Z\nSUMMARY:Wedding — Botun & Boat\nLOCATION:โรงเรียนเทศบาลวัดจอมคีรีนาคพรต (ท.6)\nEND:VEVENT\nEND:VCALENDAR`,b=new Blob([t],{type:"text/calendar"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="Botun-Boat-Wedding.ics";a.click()}
 let ob=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add("show")),{threshold:.12});document.querySelectorAll(".fade").forEach(x=>ob.observe(x));loadData();
