@@ -37,7 +37,7 @@ section{padding:100px 28px;max-width:1000px;scroll-margin-top:25px}.caps{font:11
 .venue-photo{margin:26px auto 22px;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fffaf2;box-shadow:0 12px 32px #72543e12;max-width:640px}.venue-photo img{display:block;width:100%;height:auto;border-radius:6px}.venue-photo figcaption{padding:12px 8px 5px;font-size:13px;line-height:1.7;color:var(--brown)}
 </style></head><body>
 <div id="cover"><div class="cover-note"><small>YOU ARE INVITED</small><span>Botun & Boat</span></div><div class="env"><div class="seal">B&B</div><button class="open" onclick="openInvite()">เปิดการ์ดเชิญ ♡</button></div></div>
-<button class="music" onclick="toggleMusic()">♪</button><audio id="music" loop><source src="assets/music.mp3" type="audio/mpeg"></audio>
+<button class="music" onclick="toggleMusic()">♪</button><audio id="music" loop preload="auto" playsinline webkit-playsinline><source src="assets/music.mp3" type="audio/mpeg"></audio>
 <nav class="nav"><a href="#home">Home</a><a href="#couple">Couple</a><a href="#schedule">Schedule</a><a href="#location">Map</a><a href="#gift">Gift</a><a href="#rsvp">RSVP</a></nav>
 <div class="hero" id="home"><div><div class="caps">WEDDING INVITATION</div><h1>Botun & Boat</h1><p>SUNDAY · 22 · NOVEMBER · 2026</p><a class="btn" href="#welcome" style="background:#fff;color:#755039;border-color:#fff">Discover our day ♡</a></div></div>
 <section id="welcome" class="fade"><div class="caps center">SAVE THE DATE</div><h2>22 November 2026</h2><div class="orn">— ♡ —</div><p class="center">ด้วยความยินดีของสองครอบครัว<br>ขอเรียนเชิญท่านร่วมเป็นเกียรติในพิธีมงคลสมรสของ<br><b>มนัสนันท์ & ณิพลธ์</b><br>และร่วมแบ่งปันช่วงเวลาแห่งความสุขไปกับเรา</p><div class="count"><div><b id="d">--</b>วัน</div><div><b id="h">--</b>ชั่วโมง</div><div><b id="m">--</b>นาที</div><div><b id="s">--</b>วินาที</div></div><p class="center"><button class="btn" onclick="calendar()">＋ Add to Calendar</button></p></section>
@@ -57,7 +57,44 @@ section{padding:100px 28px;max-width:1000px;scroll-margin-top:25px}.caps{font:11
 <footer><div><div class="caps">THANK YOU FOR BEING PART OF OUR STORY</div><h1 class="script">Botun & Boat</h1><p>22 · 11 · 2026</p></div></footer>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwdSocuuJJ9Puk7mVg2PjPnvf8zLOxSQEpk8zn4Tqi7LLaLZ0pACup1Uqk4sC4RFnbw/exec";
-function openInvite(){cover.style.opacity=0;setTimeout(()=>cover.style.display="none",900);music.play().catch(()=>{})}function toggleMusic(){music.paused?music.play():music.pause()}
+const musicEl=document.getElementById("music");
+let musicWanted=false;
+
+function playMusic(){
+  musicWanted=true;
+  musicEl.play().catch(()=>{});
+}
+function pauseMusic(){
+  musicWanted=false;
+  musicEl.pause();
+}
+function openInvite(){
+  cover.style.opacity=0;
+  setTimeout(()=>cover.style.display="none",900);
+  playMusic();
+}
+function toggleMusic(){
+  musicEl.paused ? playMusic() : pauseMusic();
+}
+
+// Mobile browsers can suspend audio when the page/app is backgrounded.
+// Resume only when the guest previously chose to keep the music playing.
+function resumeMusicIfWanted(){
+  if(musicWanted && musicEl.paused && !document.hidden){
+    musicEl.play().catch(()=>{});
+  }
+}
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden) resumeMusicIfWanted();
+});
+window.addEventListener("pageshow",resumeMusicIfWanted);
+window.addEventListener("focus",resumeMusicIfWanted);
+musicEl.addEventListener("ended",()=>{
+  if(musicWanted){
+    musicEl.currentTime=0;
+    musicEl.play().catch(()=>{});
+  }
+});
 let target=new Date("2026-11-22T06:39:00+07:00").getTime();function tick(){let x=Math.max(0,target-Date.now());d.innerText=Math.floor(x/86400000);h.innerText=Math.floor(x%86400000/3600000);m.innerText=Math.floor(x%3600000/60000);s.innerText=Math.floor(x%60000/1000)}tick();setInterval(tick,1000);
 
 const slipInput=document.getElementById("slip");
