@@ -95,6 +95,26 @@ musicEl.addEventListener("ended",()=>{
     musicEl.play().catch(()=>{});
   }
 });
+
+// Recover from mobile-browser media interruptions while the page is active.
+// This never restarts music after the guest explicitly presses Pause.
+["stalled","suspend","error"].forEach(evt=>{
+  musicEl.addEventListener(evt,()=>{
+    if(musicWanted && !document.hidden){
+      setTimeout(resumeMusicIfWanted,500);
+    }
+  });
+});
+musicEl.addEventListener("pause",()=>{
+  if(musicWanted && !document.hidden){
+    setTimeout(resumeMusicIfWanted,350);
+  }
+});
+setInterval(()=>{
+  if(musicWanted && !document.hidden && musicEl.paused){
+    resumeMusicIfWanted();
+  }
+},2000);
 let target=new Date("2026-11-22T06:39:00+07:00").getTime();function tick(){let x=Math.max(0,target-Date.now());d.innerText=Math.floor(x/86400000);h.innerText=Math.floor(x%86400000/3600000);m.innerText=Math.floor(x%3600000/60000);s.innerText=Math.floor(x%60000/1000)}tick();setInterval(tick,1000);
 
 const slipInput=document.getElementById("slip");
