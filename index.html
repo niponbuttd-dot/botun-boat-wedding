@@ -58,63 +58,78 @@ section{padding:100px 28px;max-width:1000px;scroll-margin-top:25px}.caps{font:11
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwdSocuuJJ9Puk7mVg2PjPnvf8zLOxSQEpk8zn4Tqi7LLaLZ0pACup1Uqk4sC4RFnbw/exec";
 const musicEl=document.getElementById("music");
+const musicBtn=document.querySelector(".music");
+const isLineBrowser=/\bLine\//i.test(navigator.userAgent) || /; wv\)/i.test(navigator.userAgent);
 let musicWanted=false;
+let lastMusicTime=0;
 
-function playMusic(){
+function updateMusicButton(){
+  if(!musicBtn) return;
+  musicBtn.textContent=musicEl.paused ? "♪" : "♫";
+  musicBtn.setAttribute("aria-label",musicEl.paused ? "เปิดเพลง" : "หยุดเพลง");
+  musicBtn.title=musicEl.paused ? "แตะเพื่อเปิดเพลง" : "แตะเพื่อหยุดเพลง";
+}
+async function playMusic(fromGesture=false){
   musicWanted=true;
-  musicEl.play().catch(()=>{});
+  try{
+    // LINE WebView is most reliable when load/play happen inside the tap gesture.
+    if(fromGesture && musicEl.readyState===0) musicEl.load();
+    if(lastMusicTime>0 && musicEl.currentTime===0) musicEl.currentTime=lastMusicTime;
+    await musicEl.play();
+  }catch(err){
+    // LINE may reject a programmatic resume. Keep the user's intent and show Play state.
+  }
+  updateMusicButton();
 }
 function pauseMusic(){
   musicWanted=false;
+  lastMusicTime=musicEl.currentTime||0;
   musicEl.pause();
+  updateMusicButton();
 }
 function openInvite(){
+  // Keep play() in the original user tap call stack for LINE/Android WebView.
+  playMusic(true);
   cover.style.opacity=0;
   setTimeout(()=>cover.style.display="none",900);
-  playMusic();
 }
 function toggleMusic(){
-  musicEl.paused ? playMusic() : pauseMusic();
+  musicEl.paused ? playMusic(true) : pauseMusic();
 }
-
-// Mobile browsers can suspend audio when the page/app is backgrounded.
-// Resume only when the guest previously chose to keep the music playing.
 function resumeMusicIfWanted(){
   if(musicWanted && musicEl.paused && !document.hidden){
-    musicEl.play().catch(()=>{});
+    playMusic(false);
   }
 }
+musicEl.addEventListener("timeupdate",()=>{
+  if(!musicEl.paused) lastMusicTime=musicEl.currentTime||lastMusicTime;
+});
+musicEl.addEventListener("play",updateMusicButton);
+musicEl.addEventListener("pause",updateMusicButton);
 document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden) resumeMusicIfWanted();
+  if(!document.hidden) setTimeout(resumeMusicIfWanted,isLineBrowser?250:0);
 });
-window.addEventListener("pageshow",resumeMusicIfWanted);
-window.addEventListener("focus",resumeMusicIfWanted);
-musicEl.addEventListener("ended",()=>{
-  if(musicWanted){
-    musicEl.currentTime=0;
-    musicEl.play().catch(()=>{});
-  }
-});
-
-// Recover from mobile-browser media interruptions while the page is active.
-// This never restarts music after the guest explicitly presses Pause.
-["stalled","suspend","error"].forEach(evt=>{
+window.addEventListener("pageshow",()=>setTimeout(resumeMusicIfWanted,isLineBrowser?250:0));
+window.addEventListener("focus",()=>setTimeout(resumeMusicIfWanted,isLineBrowser?250:0));
+["stalled","error"].forEach(evt=>{
   musicEl.addEventListener(evt,()=>{
-    if(musicWanted && !document.hidden){
-      setTimeout(resumeMusicIfWanted,500);
-    }
+    if(musicWanted && !document.hidden) setTimeout(resumeMusicIfWanted,700);
   });
 });
-musicEl.addEventListener("pause",()=>{
-  if(musicWanted && !document.hidden){
-    setTimeout(resumeMusicIfWanted,350);
+musicEl.addEventListener("ended",()=>{
+  if(musicWanted){
+    lastMusicTime=0;
+    musicEl.currentTime=0;
+    playMusic(false);
   }
 });
+// Do not treat "suspend" as a playback failure: browsers fire it normally
+// when enough media has buffered. A lightweight watchdog covers real pauses.
 setInterval(()=>{
-  if(musicWanted && !document.hidden && musicEl.paused){
-    resumeMusicIfWanted();
-  }
-},2000);
+  if(musicWanted && !document.hidden && musicEl.paused) resumeMusicIfWanted();
+},3000);
+updateMusicButton();
+
 let target=new Date("2026-11-22T06:39:00+07:00").getTime();function tick(){let x=Math.max(0,target-Date.now());d.innerText=Math.floor(x/86400000);h.innerText=Math.floor(x%86400000/3600000);m.innerText=Math.floor(x%3600000/60000);s.innerText=Math.floor(x%60000/1000)}tick();setInterval(tick,1000);
 
 const slipInput=document.getElementById("slip");
