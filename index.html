@@ -61,7 +61,8 @@ const musicEl=document.getElementById("music");
 const musicBtn=document.querySelector(".music");
 const isLineBrowser=/\bLine\//i.test(navigator.userAgent);
 const AudioContextClass=window.AudioContext||window.webkitAudioContext;
-const useWebAudio=isLineBrowser&&!!AudioContextClass;
+// In-app custom tabs may expose a plain Chrome user agent. Select by capability.
+const useWebAudio=!!AudioContextClass;
 let musicWanted=false, audioContext, audioBuffer, audioSource;
 let audioOffset=0, audioStartedAt=0, audioLoading, playRequest=0;
 let audioBytes;
@@ -155,7 +156,7 @@ updateMusicButton();
 if(new URLSearchParams(location.search).get("audioDebug")==="1"){
   const panel=document.createElement("div");
   panel.style.cssText="position:fixed;left:8px;right:8px;bottom:70px;z-index:100001;background:#fffaf4;color:#453c34;border:1px solid #ac8c62;border-radius:12px;padding:12px;font:12px/1.5 monospace;max-height:45vh;overflow:auto";
-  const title=document.createElement("b");title.textContent="ทดสอบเสียง · build audio-debug-1";
+  const title=document.createElement("b");title.textContent="ทดสอบเสียง · build audio-debug-2";
   const info=document.createElement("pre");info.style.cssText="white-space:pre-wrap;margin:8px 0";
   const play=document.createElement("button");play.textContent="แตะเล่นเพลงอีกครั้ง";play.onclick=()=>playMusic(true);
   const close=document.createElement("button");close.textContent="ปิด";close.onclick=()=>{clearInterval(timer);panel.remove();};
